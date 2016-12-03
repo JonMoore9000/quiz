@@ -2,27 +2,27 @@ var state = {
 questions: [
 {
 	text: "How many players are on the field for the team on defense?",
-	choices: [7, 8, 9, 10],
+	choices: ["7", "8", "9", "10"],
 	answerIndex: 2,
 },
 {
 	text: "How many strikes does it take to get a strikeout?",
-	choices: [1, 2, 3, 4],
+	choices: ["1", "2", "3", "4"],
 	answerIndex: 2,
 },
 {
 	text: "How many balls does it take to get a walk?",
-	choices: [2, 3, 4, 5],
+	choices: ["2", "3", "4", "5"],
 	answerIndex: 2,
 },
 {
 	text: "How many innings are there in a major league game?",
-	choices: [8, 9, 10, 11],
+	choices: ["8", "9", "10", "11"],
 	answerIndex: 1,
 },
 {
 	text: "How many games does a major league season consist of?",
-	choices: [150,  181,  162, 170],
+	choices: ["150",  "181",  "162", "170"],
 	answerIndex: 2,
 }
 ],
@@ -55,20 +55,20 @@ function resetGame(state) {
 function answerQuestion(state, answer) {
 	// this will shoot back good o rback feedback after answers
 	var currentQuestion = state.questions[state.currentQuestionIndex];
-	state.lastAnswerCorrect = currentQuestion.currentQuestionIndex == answer;
+	state.lastAnswerCorrect = currentQuestion.answerIndex == answer;
 	if (state.lastAnswerCorrect) {
-		state.score++
+		state.score++;
 	}
 	selectFeedback(state);
-	setRoute(state, 'feedback');
+	setPath(state, 'feedback');
 };
 
 function selectFeedback(state) {
-	state.feedback = state.good;
+	state.feedback = Math.random();
 };
 
 function advance(state) {
-	// this will determine if quiz is over it not it will continue
+	// this will determine if quiz is over, if not it will continue
 	state.currentQuestionIndex++;
 	if(state.currentQuestionIndex === state.questions.length) {
 		setPath(state, 'final-feedback');
@@ -79,7 +79,6 @@ function advance(state) {
 	}
 };
 
-
 // Render Functions
 
 	
@@ -89,6 +88,7 @@ function renderQuiz(state, elements) {
 	// this will hide all the pages then display current page using the path(hopefully)
 	elements[path].hide();
 	});
+
 	elements[state.path].show();
 
 	if (state.path === 'start') {
@@ -96,16 +96,15 @@ function renderQuiz(state, elements) {
 	}
 
 	else if (state.path === 'question') {
-		state.path = 'question';
-		renderQuestionPage(state, elements[state.path]);
+		renderQuestionPage(state, elements[state.path]); // sets path to quesiton page
 	}
 
 	else if (state.path === 'feedback') {
-		renderfeedbackPage(state, elements[state.path]);
+		renderfeedbackPage(state, elements[state.path]); // sets path to feedback page
 	}
 
 	else if (state.path === 'final-feedback') {
-		renderFinalFeedbackPage(state.elements[state.path]);
+		renderFinalFeedbackPage(state.elements[state.path]); // sets path to final feedback page
 	}
 };
 
@@ -117,23 +116,22 @@ function renderStartPage(state, element) {
 
 function renderQuestionPage(state, element) {
 	// this will display question page
-	renderQuestionCount(state,  element.find('.quesiton-count'));
+	renderQuestionCount(state,  element.find('.question-count'));
 	renderQuestionText(state, element.find('.question-text'));
 	renderChoices(state,  element.find('.choices'));
-
 };
 
-function renderFeedbackPage(state, element) {
+function renderfeedbackPage(state, element) {
 	//  this will display feedback after every question and contain 'advance' button
-	renderFeedbackHeader(state, element.find('.feedback-header'));
+	renderAnswerFeedbackHeader(state, element.find('.feedback-header'));
 	renderAnswerFeedbackText(state, element.find('.feedback-text'));
 	renderNextButtonText(state, element.find('.see-next'));
 };
 
 function renderAnswerFeedbackHeader(state, element) {
 	var html = state.lastAnswerCorrect ?
-	"<h5 class'user-is-correct'>correct</h5>" :
-	"<h4 class='user-is-incorrect'>Wrong!</h5>";
+	"<h5 class'user-was-correct'>correct</h5>" :
+	"<h4 class='user-was-incorrect'>Wrong!</h5>";
 
 	element.html(html);
 };
@@ -154,28 +152,26 @@ function renderNextButtonText(state, element) {
 
 function renderFinalFeedbackPage() {
 	// this will display final feedback at the end of quiz
-	renderFinalFeedbackText(state, element.final-feedback.find('.results-text'));
+	renderFinalFeedbackText(state, element.find('.results-text'));
 };
 
 function renderFinalFeddbackText(state,  element) {
 	// will display when you complete quiz
-	var text = "YOu got " + state.score + " out of" + state.questions.length + " questions right.";
+	var text = "You got " + state.score + " out of" + state.questions.length + " questions right.";
 
 	element.text(text);
 };
 
 function renderQuestionCount(state, element) {
-	var text = (state.currentQuestionIndex +1) + "/" + state.questions.length;
+	var text = (state.currentQuestionIndex + 1) + "/" + state.questions.length;
 
 	element.text(text);
 };
 
 function renderQuestionText(state, element) {
 	// this will render the question
-	console.log(questionElement);
 	var currentQuestion = state.questions[state.currentQuestionIndex];
 	element.text(currentQuestion.text);
-	questionElement.text('something');
 };
 
 function renderChoices(state, element){
@@ -197,13 +193,14 @@ function renderChoices(state, element){
 
 var PAGE_ELEMENTS = {
 	'start': $('.start-page'),
-	'question': $('.quesiton-page'),
+	'question': $('.questions-page'),
 	'feedback': $('.answer-feedback-page'),
 	'final-feedback': $('.final-feedback-page'),
 };
 
-// handler to start quiz and go to first question
-$("form[name='game-start']").submit(function(event) {
+
+$(".game-start").submit(function(event) {
+	// handler to start quiz and go to first question
 	event.preventDefault();
 	setPath(state, 'question');
 	renderQuiz(state, PAGE_ELEMENTS);
@@ -213,15 +210,16 @@ $('.restart-game').click(function(event) {
 	// restarts quiz
 	event.preventDefault();
 	resetGame(state);
-	renderQuiz(state);
+	renderQuiz(state, PAGE_ELEMENTS);
 });
 
 $("form[name='current-question']").submit(function(event) {
 	// this is recieiving the selections from user
 	event.preventDefault();
 	var answer = $("input[name='user-answer']:checked").val();
-	answerQuestion(state, element);
-	renderApp(state, PAGE_ELEMENTS);
+	answer = parseInt(answer, 10);
+	answerQuestion(state, answer);
+	renderQuiz(state, PAGE_ELEMENTS);
 });
 
 $('.see-next').click(function(event) {
