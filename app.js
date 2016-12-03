@@ -133,7 +133,7 @@ function renderAnswerFeedbackPage(state, element) {
 };
 
 function renderFinalFeedbackPage(state, element) {
-	// this will display final feedback at the end of quiz
+	// this will display final feedback at the end of quiz.
 	renderFinalFeedbackText(state, element.find('.results-text'));
 };
 
