@@ -34,7 +34,8 @@ bad: ["Not even close..."],
 score: 0, // track score
 currentQuestionIndex: 0, //track current question
 path: 'start', // will be used to go from page to page
-lastAnswerCorrect: 0, // used in our functions for answering questions
+lastAnswerCorrect: false, // used in our functions for answering questions
+feedbackRandom: 0,
 
 };
 
@@ -60,11 +61,11 @@ function answerQuestion(state, answer) {
 	}
 	selectFeedback(state);
 	setRoute(state, 'feedback');
-}
+};
 
 function selectFeedback(state) {
 	state.feedback = state.good;
-}
+};
 
 function advance(state) {
 	// this will determine if quiz is over it not it will continue
@@ -73,10 +74,14 @@ function advance(state) {
 		setPath(state, 'final-feedback');
 	}
 
-	else if  {
+	else {
 		setPath(state, 'question');
 	}
 };
+
+
+// Render Functions
+
 	
 // this is the big funciton we will call that will display quiz
 function renderQuiz(state, elements) {
@@ -84,10 +89,10 @@ function renderQuiz(state, elements) {
 	// this will hide all the pages then display current page using the path(hopefully)
 	elements[path].hide();
 	});
-	elements[path].show();
+	elements[state.path].show();
 
 	if (state.path === 'start') {
-		// starter page but is already loaded
+		renderStartPage(state, elements[state.path]);// starter page but is already loaded
 	}
 
 	else if (state.path === 'question') {
@@ -96,7 +101,7 @@ function renderQuiz(state, elements) {
 	}
 
 	else if (state.path === 'feedback') {
-		renderfeedbackPage(state, elements[state.path])
+		renderfeedbackPage(state, elements[state.path]);
 	}
 
 	else if (state.path === 'final-feedback') {
@@ -110,31 +115,70 @@ function renderStartPage(state, element) {
 	// i think we just need it to be accounted for in function above
 };
 
-function renderQuestionPage(state, elements) {
+function renderQuestionPage(state, element) {
 	// this will display question page
-	renderQuestionText(state, elements.question.find('.question-text'));
-	renderChoices(state,  elements.question.find('.choices'));
+	renderQuestionCount(state,  element.find('.quesiton-count'));
+	renderQuestionText(state, element.find('.question-text'));
+	renderChoices(state,  element.find('.choices'));
 
 };
 
-function renderFeedbackPage(state, elements) {
+function renderFeedbackPage(state, element) {
 	//  this will display feedback after every question and contain 'advance' button
+	renderFeedbackHeader(state, element.find('.feedback-header'));
+	renderAnswerFeedbackText(state, element.find('.feedback-text'));
+	renderNextButtonText(state, element.find('.see-next'));
+};
 
+function renderAnswerFeedbackHeader(state, element) {
+	var html = state.lastAnswerCorrect ?
+	"<h5 class'user-is-correct'>correct</h5>" :
+	"<h4 class='user-is-incorrect'>Wrong!</h5>";
+
+	element.html(html);
+};
+
+function renderAnswerFeedbackText(state, element) {
+	var choices = state.lastAnswerCorrect ? state.good : state.bad;
+	var text = choices[Math.floor(state.feedbackRandom * choices.length)];
+
+	element.text(text);
+};
+
+function renderNextButtonText(state, element) {
+	var text = state.currentQuestionIndex < state.questions.length - 1 ? 
+	"Next" : "How did I do?";
+
+	element.text(text);
 };
 
 function renderFinalFeedbackPage() {
 	// this will display final feedback at the end of quiz
+	renderFinalFeedbackText(state, element.final-feedback.find('.results-text'));
 };
 
-function renderQuestionText(state, questionElement) {
+function renderFinalFeddbackText(state,  element) {
+	// will display when you complete quiz
+	var text = "YOu got " + state.score + " out of" + state.questions.length + " questions right.";
+
+	element.text(text);
+};
+
+function renderQuestionCount(state, element) {
+	var text = (state.currentQuestionIndex +1) + "/" + state.questions.length;
+
+	element.text(text);
+};
+
+function renderQuestionText(state, element) {
 	// this will render the question
 	console.log(questionElement);
-	//var currentQuestion = state.questions[state.currentQuestionIndex];
-	//elements.text(currentQuestion.text);
+	var currentQuestion = state.questions[state.currentQuestionIndex];
+	element.text(currentQuestion.text);
 	questionElement.text('something');
 };
 
-function renderChoices(state, elements){
+function renderChoices(state, element){
 	// this will render choices
 	var currentQuestion = state.questions[state.currentQuestionIndex];
 	var choices = currentQuestion.choices.map(function(choice, index) {
@@ -150,7 +194,8 @@ function renderChoices(state, elements){
 
 
 // Event handlers
-var elements = {
+
+var PAGE_ELEMENTS = {
 	'start': $('.start-page'),
 	'question': $('.quesiton-page'),
 	'feedback': $('.answer-feedback-page'),
@@ -158,15 +203,35 @@ var elements = {
 };
 
 // handler to start quiz and go to first question
-$('.game-start').submit(function(event) {
+$("form[name='game-start']").submit(function(event) {
 	event.preventDefault();
-	//console.log(setPath); debugger;
 	setPath(state, 'question');
-	renderQuiz(state, elements);
+	renderQuiz(state, PAGE_ELEMENTS);
 });
 
+$('.restart-game').click(function(event) {
+	// restarts quiz
+	event.preventDefault();
+	resetGame(state);
+	renderQuiz(state);
+});
+
+$("form[name='current-question']").submit(function(event) {
+	// this is recieiving the selections from user
+	event.preventDefault();
+	var answer = $("input[name='user-answer']:checked").val();
+	answerQuestion(state, element);
+	renderApp(state, PAGE_ELEMENTS);
+});
+
+$('.see-next').click(function(event) {
+	advance(state);
+	renderQuiz(state, PAGE_ELEMENTS);
+});
+
+
 $(function() {
-	renderQuiz(state, elements);
+	renderQuiz(state, PAGE_ELEMENTS);
 });
 
 
