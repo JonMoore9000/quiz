@@ -33,7 +33,7 @@ good: [
 
 bad: [	
 		"Not even close.",
-		"What are you doin!"],
+		"What are you doing!"],
 
 score: 0, // track score
 currentQuestionIndex: 0, //track current question
