@@ -3,33 +3,37 @@ questions: [
 {
 	text: "How many players are on the field for the team on defense?",
 	choices: ["7", "8", "9", "10"],
-	answerIndex: 2,
+	answerIndex: 2
 },
 {
 	text: "How many strikes does it take to get a strikeout?",
 	choices: ["1", "2", "3", "4"],
-	answerIndex: 2,
+	answerIndex: 2
 },
 {
 	text: "How many balls does it take to get a walk?",
 	choices: ["2", "3", "4", "5"],
-	answerIndex: 2,
+	answerIndex: 2
 },
 {
 	text: "How many innings are there in a major league game?",
 	choices: ["8", "9", "10", "11"],
-	answerIndex: 1,
+	answerIndex: 1
 },
 {
 	text: "How many games does a major league season consist of?",
 	choices: ["150",  "181",  "162", "170"],
-	answerIndex: 2,
+	answerIndex: 2
 }
 ],
 
-good: ["Nice job!"],
+good: [
+		"Nice job!",
+		"Way to go!"],
 
-bad: ["Not even close..."],
+bad: [	
+		"Not even close.",
+		"What are you doin!"],
 
 score: 0, // track score
 currentQuestionIndex: 0, //track current question
@@ -41,7 +45,7 @@ feedbackRandom: 0,
 
 // state stuff
 
-function setPath(state,  path) { 
+function setPath(state, path) { 
 	// this is used to traverse the different pages
 	state.path = path;
 };
@@ -53,18 +57,18 @@ function resetGame(state) {
 };
 
 function answerQuestion(state, answer) {
-	// this will shoot back good o rback feedback after answers
+	// this will shoot back good or back feedback after answers
 	var currentQuestion = state.questions[state.currentQuestionIndex];
-	state.lastAnswerCorrect = currentQuestion.answerIndex == answer;
+	state.lastAnswerCorrect = currentQuestion.answerIndex === answer;
 	if (state.lastAnswerCorrect) {
 		state.score++;
 	}
 	selectFeedback(state);
-	setPath(state, 'feedback');
+	setPath(state, 'answer-feedback');
 };
 
 function selectFeedback(state) {
-	state.feedback = Math.random();
+	state.feedbackRandom = Math.random();
 };
 
 function advance(state) {
@@ -99,12 +103,12 @@ function renderQuiz(state, elements) {
 		renderQuestionPage(state, elements[state.path]); // sets path to quesiton page
 	}
 
-	else if (state.path === 'feedback') {
-		renderfeedbackPage(state, elements[state.path]); // sets path to feedback page
+	else if (state.path === 'answer-feedback') {
+		renderAnswerFeedbackPage(state, elements[state.path]); // sets path to feedback page
 	}
 
 	else if (state.path === 'final-feedback') {
-		renderFinalFeedbackPage(state.elements[state.path]); // sets path to final feedback page
+		renderFinalFeedbackPage(state, elements[state.path]); // sets path to final feedback page
 	}
 };
 
@@ -121,45 +125,16 @@ function renderQuestionPage(state, element) {
 	renderChoices(state,  element.find('.choices'));
 };
 
-function renderfeedbackPage(state, element) {
-	//  this will display feedback after every question and contain 'advance' button
+function renderAnswerFeedbackPage(state, element) {
+	//  this will display feedback after every question and contain 'next' button
 	renderAnswerFeedbackHeader(state, element.find('.feedback-header'));
 	renderAnswerFeedbackText(state, element.find('.feedback-text'));
 	renderNextButtonText(state, element.find('.see-next'));
 };
 
-function renderAnswerFeedbackHeader(state, element) {
-	var html = state.lastAnswerCorrect ?
-	"<h5 class'user-was-correct'>correct</h5>" :
-	"<h4 class='user-was-incorrect'>Wrong!</h5>";
-
-	element.html(html);
-};
-
-function renderAnswerFeedbackText(state, element) {
-	var choices = state.lastAnswerCorrect ? state.good : state.bad;
-	var text = choices[Math.floor(state.feedbackRandom * choices.length)];
-
-	element.text(text);
-};
-
-function renderNextButtonText(state, element) {
-	var text = state.currentQuestionIndex < state.questions.length - 1 ? 
-	"Next" : "How did I do?";
-
-	element.text(text);
-};
-
-function renderFinalFeedbackPage() {
+function renderFinalFeedbackPage(state, element) {
 	// this will display final feedback at the end of quiz
 	renderFinalFeedbackText(state, element.find('.results-text'));
-};
-
-function renderFinalFeddbackText(state,  element) {
-	// will display when you complete quiz
-	var text = "You got " + state.score + " out of" + state.questions.length + " questions right.";
-
-	element.text(text);
 };
 
 function renderQuestionCount(state, element) {
@@ -185,7 +160,37 @@ function renderChoices(state, element){
 			'</li>'
 		);	
 	});
+
 	element.html(choices);
+};
+
+function renderAnswerFeedbackHeader(state, element) {
+	var html = state.lastAnswerCorrect ?
+	"<h5 class='user-was-correct'>correct</h5>" :
+	"<h4 class='user-was-incorrect'>Wrong!</>";
+
+	element.html(html);
+};
+
+function renderAnswerFeedbackText(state, element) {
+	var choices = state.lastAnswerCorrect ? state.good : state.bad;
+	var text = choices[Math.floor(state.feedbackRandom * choices.length)];
+
+	element.text(text);
+};
+
+function renderNextButtonText(state, element) {
+	var text = state.currentQuestionIndex < state.questions.length - 1 ? 
+	"Next" : "How did I do?";
+
+	element.text(text);
+};
+
+function renderFinalFeedbackText(state,  element) {
+	// will display when you complete quiz
+	var text = "You got " + state.score + " out of " + state.questions.length + " questions right.";
+
+	element.text(text);
 };
 
 
@@ -194,7 +199,7 @@ function renderChoices(state, element){
 var PAGE_ELEMENTS = {
 	'start': $('.start-page'),
 	'question': $('.questions-page'),
-	'feedback': $('.answer-feedback-page'),
+	'answer-feedback': $('.answer-feedback-page'),
 	'final-feedback': $('.final-feedback-page'),
 };
 
